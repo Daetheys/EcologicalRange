@@ -1,0 +1,13 @@
+name: ecorange
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.9
+  - pip:
+    - jax
+    - jaxlib
+    - dm-haiku
+    - pytest
+    - gym
+    - xlsxwriter
