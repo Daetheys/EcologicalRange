@@ -7,8 +7,8 @@ def test_init():
     action01 = jnp.array([[10,0],[.75,0.25]])
     context1 = jnp.array([action00,action01])
 
-    action10 = jnp.array([[1,0],[.75,0.25]])
-    action11 = jnp.array([[10,0],[.75,0.25]])
+    action10 = jnp.array([[-1,0],[.75,0.25]])
+    action11 = jnp.array([[-10,0],[.75,0.25]])
     context2 = jnp.array([action00,action01])
 
     contexts = jnp.array([context1,context2])
@@ -23,9 +23,9 @@ def test_reset():
     action01 = jnp.array([[10,0],[.75,0.25]])
     context1 = jnp.array([action00,action01])
 
-    action10 = jnp.array([[1,0],[.75,0.25]])
-    action11 = jnp.array([[10,0],[.75,0.25]])
-    context2 = jnp.array([action00,action01])
+    action10 = jnp.array([[-1,0],[.75,0.25]])
+    action11 = jnp.array([[-10,0],[.75,0.25]])
+    context2 = jnp.array([action10,action11])
 
     contexts = jnp.array([context1,context2])
     
@@ -50,8 +50,8 @@ def test_step():
     action01 = jnp.array([[10,0],[.75,0.25]])
     context1 = jnp.array([action00,action01])
 
-    action10 = jnp.array([[1,0],[.75,0.25]])
-    action11 = jnp.array([[10,0],[.75,0.25]])
+    action10 = jnp.array([[-1,0],[.75,0.25]])
+    action11 = jnp.array([[-10,0],[.75,0.25]])
     context2 = jnp.array([action00,action01])
     
     contexts_th = jnp.array([context1,context2])

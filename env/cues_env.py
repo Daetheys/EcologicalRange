@@ -4,6 +4,7 @@ from functools import partial
 import jax
 import haiku as hk
 import gym
+from utils.sampling import sample_batch_position
 
 class CuesEnv(Env):
     def __init__(self,contexts,batch_size=1,seed=0):
@@ -16,6 +17,9 @@ class CuesEnv(Env):
 
         self.observation_space = gym.spaces.Tuple([gym.spaces.Discrete(self.n_contexts*self.n_symbols) for i in range(self.batch_size)])
         self.action_space = gym.spaces.Tuple([gym.spaces.Discrete(2) for i in range(self.batch_size)])
+
+        self.n_states = self.n_contexts*self.n_symbols
+        self.action_dim = 2
 
         self.__base_obs_array = jnp.tile(jnp.arange(self.n_symbols)[None],(self.batch_size,1))
 
@@ -36,10 +40,6 @@ class CuesEnv(Env):
     def _step_rewards(self,key,binary_actions,contexts,current_contexts,batch_size):
         rewards_th = contexts[current_contexts,binary_actions,0]
         probs = contexts[current_contexts,binary_actions,1]
-        rd = jax.random.uniform(key,shape=(self.batch_size,1))
-        cumprobs = jnp.cumsum(probs,axis=1)
-        padded_cumprobs = jnp.concatenate([jnp.zeros((self.batch_size,1)),cumprobs],axis=1)
-        realisations = jnp.float32(rd>padded_cumprobs)
-        positions = realisations[:,:-1] - realisations[:,1:]
+        positions = sample_batch_position(key,probs)
         rewards = jnp.sum(positions*rewards_th,axis=1)
         return rewards
