@@ -42,18 +42,19 @@ class RangeAgent(OnlineAgent):
         alpha = self.alpha_int
         if r < self.mini[chosen_symbol]:
             alpha = self.alpha_ext
-        self.mini[chosen_symbol] += alpha/jnp.exp(lp)*(r-self.mini[chosen_symbol])
+        self.mini[chosen_symbol] += alpha*(r-self.mini[chosen_symbol])#/np.exp(lp)
 
         #Update Maxi
         alpha = self.alpha_int
         if self.maxi[chosen_symbol] < r:
             alpha = self.alpha_ext
-        self.maxi[chosen_symbol] += alpha/jnp.exp(lp)*(r-self.maxi[chosen_symbol])
+        self.maxi[chosen_symbol] += alpha*(r-self.maxi[chosen_symbol])#/np.exp(lp)
 
         #Update Q
-        relative_r = (r-self.mini[chosen_symbol])/(self.maxi[chosen_symbol] - self.mini[chosen_symbol]+1e-6)
-        self.q_values[chosen_symbol] += self.alpha_q * (relative_r - self.q_values[chosen_symbol])
+        relative_r = (r-self.mini[chosen_symbol])/(self.maxi[chosen_symbol] - self.mini[chosen_symbol])
+        self.q_values[chosen_symbol] += self.alpha_q * (relative_r - self.q_values[chosen_symbol])#/np.exp(lp)
 
         print('---')
         print(self.mini,jnp.exp(lp))
         print(self.maxi)
+        print(chosen_symbol,relative_r)

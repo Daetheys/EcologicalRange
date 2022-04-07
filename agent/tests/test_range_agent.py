@@ -1,4 +1,3 @@
-from sre_parse import State
 from agent.range_agent import *
 from env.test_env import *
 import gym
@@ -58,7 +57,6 @@ def test_range_agent_learn():
 
     agent.learn(ts)
 
-
 from env.cues_env import CuesEnv
 def test_agent_cuesenv():
     action00 = jnp.array([[1,0],[.75,0.25]])
@@ -69,7 +67,7 @@ def test_agent_cuesenv():
     action11 = jnp.array([[-10,0],[.75,0.25]])
     context2 = jnp.array([action10,action11])
 
-    contexts = jnp.array([context1])#,context2])
+    contexts = jnp.array([context1,context2])
 
     env = CuesEnv(contexts,batch_size=1,seed=1)
 
