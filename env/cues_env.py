@@ -6,6 +6,7 @@ import haiku as hk
 import gym
 from utils.sampling import sample_batch_position
 
+
 class CuesEnv(Env):
     def __init__(self,contexts,batch_size=1,seed=0):
         self.contexts = contexts #jnp array [n_contexts,2,n_symbols] -> [[ [rewards,probs] ]]
@@ -30,7 +31,8 @@ class CuesEnv(Env):
 
     #@partial(jax.jit,static_argnums=0)
     def _sample_obs(self):
-        return self.__base_obs_array + self.current_contexts[:,None]*self.n_symbols
+        out = self.__base_obs_array + self.current_contexts[:,None]*self.n_symbols
+        return out
 
     def step(self,binary_actions):
         rewards = self._step_rewards(next(self.rng),binary_actions,self.contexts,self.current_contexts,self.batch_size)

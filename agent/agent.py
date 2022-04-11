@@ -3,10 +3,11 @@ import jax.numpy as jnp
 import numpy as np
 
 class Agent:
-    def __init__(self,env,seed=0):
+    def __init__(self,env,seed=0,logger=None):
         self.env = env
         self.seed = seed
         self.rng = hk.PRNGSequence(self.seed)
+        self.logger = logger
     def forward(self,obs):
         raise NotImplementedError
     def learn(self):
@@ -27,8 +28,11 @@ class OnlineAgent(Agent):
         o = self.env.reset()
         for i in range(nb_steps):
             a,lp = self.forward(o)
+            print(i,o,a)
             no,r,d,i = self.env.step(a)
             ts = Timestep(o,a,lp,r,no,d,i)
+            if self.logger:
+                self.logger.add('reward',np.array(r))
             self.learn(ts)
             if np.any(d):
                 o = self.env.reset()

@@ -11,7 +11,7 @@ def sample_batch_position(key,probs):
     positions = realisations[:,:-1] - realisations[:,1:]
     return positions
 
-@jax.jit
+#@jax.jit
 def sample_batch_index(key,probs):
     batch_size,nb_outcomes = probs.shape
     positions = sample_batch_position(key,probs)
