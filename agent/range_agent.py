@@ -10,8 +10,8 @@ class RangeAgent(OnlineAgent):
         super().__init__(*args,**kwargs)
         self.reset()
     def reset(self):
-        self.mini = np.zeros((self.env.n_states))
-        self.maxi = np.zeros((self.env.n_states))+1
+        self.mini = 0
+        self.maxi = 1
         self.q_values = np.zeros((self.env.n_states))
 
         self.temp = 1
@@ -45,16 +45,16 @@ class RangeAgent(OnlineAgent):
 
         #Update Mini
         alpha = self.alpha_int
-        if r < self.mini[chosen_symbol]:
+        if r < self.mini:
             alpha = self.alpha_ext
-        self.mini[chosen_symbol] += alpha*(r-self.mini[chosen_symbol])#/np.exp(lp)
+        self.mini += alpha*(r-self.mini)#/np.exp(lp)
 
         #Update Maxi
         alpha = self.alpha_int
-        if self.maxi[chosen_symbol] < r:
+        if self.maxi < r:
             alpha = self.alpha_ext
-        self.maxi[chosen_symbol] += alpha*(r-self.maxi[chosen_symbol])#/np.exp(lp)
+        self.maxi += alpha*(r-self.maxi)#/np.exp(lp)
 
         #Update Q
         relative_r = self.compute_relative(r,chosen_symbol)
-        self.q_values[chosen_symbol] += self.alpha_q * (relative_r - self.q_values[chosen_symbol])#/np.exp(lp)
+        self.q_values += self.alpha_q * (relative_r - self.q_values)#/np.exp(lp)

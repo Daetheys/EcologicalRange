@@ -28,11 +28,10 @@ class OnlineAgent(Agent):
         o = self.env.reset()
         for i in range(nb_steps):
             a,lp = self.forward(o)
-            print(i,o,a)
             no,r,d,i = self.env.step(a)
             ts = Timestep(o,a,lp,r,no,d,i)
             if self.logger:
-                self.logger.add('reward',np.array(r))
+                self.logger.add('reward',r.item())
             self.learn(ts)
             if np.any(d):
                 o = self.env.reset()
