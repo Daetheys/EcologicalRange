@@ -3,15 +3,19 @@ import jax.numpy as jnp
 import numpy as np
 
 class Agent:
-    def __init__(self,env,seed=0,logger=None):
+    def __init__(self,env,seed=0,logger_queue=None):
         self.env = env
         self.seed = seed
         self.rng = hk.PRNGSequence(self.seed)
-        self.logger = logger
+        self.logger_queue = logger_queue
     def forward(self,obs):
         raise NotImplementedError
     def learn(self):
         raise NotImplementedError
+    def log(self,name,val):
+        if self.logger_queue:
+            command = ('add',name,val)
+            self.logger_queue.put(command)
 
 import collections
 Timestep = collections.namedtuple('Timestep',['o','a','lp','r','no','d','i'])
@@ -30,8 +34,14 @@ class OnlineAgent(Agent):
             a,lp = self.forward(o)
             no,r,d,i = self.env.step(a)
             ts = Timestep(o,a,lp,r,no,d,i)
-            if self.logger:
-                self.logger.add('reward',r.item())
+
+            self.log('observation',o[0])
+            self.log('action',a[0])
+            self.log('reward',r[0])
+            self.log('done',d[0])
+            self.log('new_observation',no[0])
+            #self.logger.add('info',i[0])
+
             self.learn(ts)
             if np.any(d):
                 o = self.env.reset()

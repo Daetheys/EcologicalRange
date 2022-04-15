@@ -9,10 +9,10 @@ class Trainer:
 
         seed = config['seed']
 
-        os.makedirs(os.path.join('trainings',self.name,'logs'))
+        os.makedirs(os.path.join('TRAININGS',self.name,'logs'))
 
         #Logger
-        logger_file_path = os.path.join('trainings',self.name,'logs')
+        logger_file_path = os.path.join('TRAININGS',self.name,'logs')
         self.logger = config['logger_class'](logger_file_path,**config['logger_config'])
         self.logger.start()
 
@@ -24,7 +24,7 @@ class Trainer:
         self.env = config['env_class'](seed=seed,**config['env_config'])
 
         #Agent
-        self.agent = config['agent_class'](self.env,logger=self.logger,seed=seed,**config['agent_config'])
+        self.agent = config['agent_class'](self.env,logger_queue=self.logger.queue,seed=seed,**config['agent_config'])
 
         #Save config
         self.config = config
@@ -35,3 +35,6 @@ class Trainer:
     def start(self):
         print('Starting Training : ',self.name)
         self.agent.train(self.config['nb_steps'])
+
+        self.logger.stop()
+        #self.plotter.stop()

@@ -4,6 +4,7 @@ import pickle
 import time
 import os
 import asyncio
+import sys
 
 def add_dict(d,label,val):
     try:
@@ -35,7 +36,7 @@ def process_loop(file_path,queue,dtlog):
             write_file(file_path,it,data)
             tref = time.perf_counter()
             it += 1
-        
+    sys.exit()        
 
 class Logger:
     def __init__(self,file_path,dtlog):
@@ -52,7 +53,6 @@ class Logger:
     def stop(self):
         command = ('stop',)
         self.queue.put(command)
-        self.process.close()
 
     def add(self,name,val):
         command = ('add',name,val)

@@ -25,11 +25,16 @@ if __name__ == '__main__':
             },
 
         "agent_class":RangeAgent,
-        "agent_config":{},
+        "agent_config":{
+            'temp':1.,
+            'alpha_ext':0.02,
+            'alpha_int':0.002,
+            'alpha_q':0.02,
+        },
 
         "plotter_class":Plotter,
         "plotter_config":{
-            'targets':['reward'],
+            'targets':[['qval0','qval1','qval2','qval3'],['maxi[0 1]','mini[0 1]','maxi[2 3]','mini[2 3]']],
             'actualization_rate':0.2,
             },
 
@@ -38,9 +43,9 @@ if __name__ == '__main__':
             "dtlog":0.2,
         },
 
-        "nb_steps":1000,
+        "nb_steps":350,
         "name":None,
-        "seed":1,
+        "seed":0,
     }
 
 
@@ -50,5 +55,4 @@ if __name__ == '__main__':
     print("EV",(contexts[:,:,0]*contexts[:,:,1]).sum(axis=2).reshape(-1))
     print("min",trainer.agent.mini)
     print("max",trainer.agent.maxi)
-    print('delta',trainer.agent.maxi-trainer.agent.mini)
     print("qval",trainer.agent.q_values)
