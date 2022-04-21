@@ -47,10 +47,3 @@ class OnlineAgent(Agent):
                 o = self.env.reset()
             else:
                 o = no
-    
-    def test(self,nb_steps):
-        o = self.env.reset()
-        for i in range(nb_steps):
-            a = self.forward(o)
-            no,r,d,i = self.env.step(a)
-            ts = Timestep(o,a,r,no,d,i)

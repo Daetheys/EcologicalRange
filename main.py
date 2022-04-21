@@ -1,11 +1,17 @@
 from agent.range_agent import RangeAgent
 from env.cues_env import CuesEnv
+from env.range_env import RangeEnv
 from logger.logger import Logger
 from logger.plotter import Plotter
 from trainer.trainer import Trainer
 
 if __name__ == '__main__':
 
+    
+
+    config = {}
+
+    """
     #Cues Env contexts
     import jax.numpy as jnp
     action00 = jnp.array([[10,0],[.75,0.25]])
@@ -18,41 +24,60 @@ if __name__ == '__main__':
 
     contexts = jnp.array([context1,context2])
 
-    config = {
-        "env_class":CuesEnv,
-        "env_config":{
+    config['env_class'] = CuesEnv
+    config['env_config'] = {
             "contexts":contexts
-            },
+            }
+    """
 
-        "agent_class":RangeAgent,
-        "agent_config":{
-            'temp':1.,
-            'alpha_ext':0.02,
-            'alpha_int':0.002,
-            'alpha_q':0.02,
-        },
+    config['env_class'] = RangeEnv
+    config['env_config'] = {
+        "min_range":[0,0,0,0,0,0,5,5,0,0,10],
+        "max_range":[1,10,10,15,15,10,10,10,15,15,15],
+        "nb_arms":20,
+        "season_max_duration":10
+        }
 
-        "plotter_class":Plotter,
-        "plotter_config":{
-            'targets':[['qval0','qval1','qval2','qval3'],['maxi[0 1]','mini[0 1]','maxi[2 3]','mini[2 3]']],
+    config['agent_class'] = RangeAgent
+    config['agent_config'] = {
+            'temp':4.,
+            'alpha_ext':0.5,
+            'alpha_int':0.05,
+            'alpha_q':1.,
+        }
+
+    config['plotter_class'] = Plotter
+    config['plotter_config'] = {
+            'targets':[],
             'actualization_rate':0.2,
-            },
+            }
 
-        "logger_class":Logger,
-        "logger_config":{
+    config['logger_class'] = Logger
+    config['logger_config'] = {
             "dtlog":0.2,
-        },
+        }
 
-        "nb_steps":350,
-        "name":None,
-        "seed":0,
-    }
+    config['nb_steps'] = 350
+    config['name'] = None
+    config['seed'] = 0
 
 
     trainer = Trainer(config)
+
+    trainer.init()
+
+    config['plotter_config']['targets'].append(['qval_'+str(i) for i in range(len(trainer.agent.q_values))])
+    config['plotter_config']['targets'].append(['mini_'+str(k) for k in trainer.agent.mini]+['maxi_'+str(k) for k in trainer.agent.mini])
+    config['plotter_config']['targets'].append(['env_mini','env_maxi'])
+    config['plotter_config']['targets'].append(['reward','EV'])
+    config['plotter_config']['targets'].append(['action'])
+
+    trainer.start_logger()
+    trainer.start_plotter()
+
     trainer.start()
 
-    print("EV",(contexts[:,:,0]*contexts[:,:,1]).sum(axis=2).reshape(-1))
-    print("min",trainer.agent.mini)
-    print("max",trainer.agent.maxi)
-    print("qval",trainer.agent.q_values)
+    #print("EV",(contexts[:,:,0]*contexts[:,:,1]).sum(axis=2).reshape(-1))
+    #print("min",trainer.agent.mini)
+    #print("max",trainer.agent.maxi)
+    #print("qval",trainer.agent.q_values)

@@ -1,33 +1,48 @@
 import uuid
 import os
+import time
 
 class Trainer:
     def __init__(self,config):
-        self.name = config['name']
+        #Save config
+        self.config = config
+
+        self.name = self.config['name']
         if self.name is None:
             self.name = str(uuid.uuid4())
 
-        seed = config['seed']
+        self.seed = self.config['seed']
 
+        self.logger_file_path = os.path.join('TRAININGS',self.name,'logs')
+
+    def create_dir(self):
         os.makedirs(os.path.join('TRAININGS',self.name,'logs'))
 
-        #Logger
-        logger_file_path = os.path.join('TRAININGS',self.name,'logs')
-        self.logger = config['logger_class'](logger_file_path,**config['logger_config'])
+    def init_logger(self):
+        self.logger = self.config['logger_class'](self.logger_file_path,**self.config['logger_config'])
+        self.logger.init()
+
+    def init_plotter(self):
+        self.plotter = self.config['plotter_class'](self.logger_file_path,**self.config['plotter_config'])
+
+    def init_env(self):
+        self.env = self.config['env_class'](seed=self.seed,**self.config['env_config'])
+
+    def init_agent(self):
+        self.agent = self.config['agent_class'](self.env,logger_queue=self.logger.queue,seed=self.seed,**self.config['agent_config'])
+
+    def init(self):
+        self.create_dir()
+        self.init_logger()
+        self.init_plotter()
+        self.init_env()
+        self.init_agent()
+
+    def start_logger(self):
         self.logger.start()
 
-        #Plotter
-        self.plotter = config['plotter_class'](logger_file_path,**config['plotter_config'])
+    def start_plotter(self):
         self.plotter.start()
-
-        #Env
-        self.env = config['env_class'](seed=seed,**config['env_config'])
-
-        #Agent
-        self.agent = config['agent_class'](self.env,logger_queue=self.logger.queue,seed=seed,**config['agent_config'])
-
-        #Save config
-        self.config = config
 
     def dump_config(self):
         pass
@@ -35,6 +50,9 @@ class Trainer:
     def start(self):
         print('Starting Training : ',self.name)
         self.agent.train(self.config['nb_steps'])
+        print('Training Finished : ',self.name)
 
+        time.sleep(1.)
+        self.logger.flush()
         self.logger.stop()
         #self.plotter.stop()

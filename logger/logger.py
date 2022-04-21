@@ -27,12 +27,13 @@ def process_loop(file_path,queue,dtlog):
     while True:
         m = queue.get()
         if m[0] == 'stop':
+            write_file(file_path,it,data) #Because the plotter only looks at the -2 file written
             break
         elif m[0] == 'add':
             add_dict(data,m[1],m[2])
         elif m[0] == 'drop':
             del data[m[1]]
-        if (time.perf_counter()-tref)**2>dtlog: #Saves regularly if it's updated
+        if (time.perf_counter()-tref)**2>dtlog or m[0] == 'flush': #Saves regularly if it's updated
             write_file(file_path,it,data)
             tref = time.perf_counter()
             it += 1
@@ -42,11 +43,13 @@ class Logger:
     def __init__(self,file_path,dtlog):
         self.file_path = file_path
         self.dtlog = dtlog
-    
-    def start(self):
+
+    def init(self):
         self.queue = Queue()
         self.process = Thread(target=process_loop,args=(self.file_path,self.queue,self.dtlog))
         self.process.daemon = True
+    
+    def start(self):
         self.process.start()
         print('started')
 
@@ -60,4 +63,8 @@ class Logger:
 
     def drop(self,name):
         command = ('drop',name)
+        self.queue.put(command)
+
+    def flush(self):
+        command = ('flush',)
         self.queue.put(command)

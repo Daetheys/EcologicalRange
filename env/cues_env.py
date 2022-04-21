@@ -9,8 +9,8 @@ from utils.sampling import sample_batch_position
 
 class CuesEnv(Env):
     def __init__(self,contexts,batch_size=1,seed=0):
-        self.contexts = contexts #jnp array [n_contexts,2,n_symbols] -> [[ [rewards,probs] ]]
-        self.n_contexts,self.n_symbols,_,self.n_outcomes = self.contexts.shape
+        self.set_context(contexts)
+
         self.seed = seed
         self.batch_size = batch_size
 
@@ -19,6 +19,10 @@ class CuesEnv(Env):
         self.observation_space = gym.spaces.Tuple([gym.spaces.Discrete(self.n_contexts*self.n_symbols) for i in range(self.batch_size)])
         self.action_space = gym.spaces.Tuple([gym.spaces.Discrete(2) for i in range(self.batch_size)])
 
+    def set_context(self,contexts):
+        self.contexts = contexts #jnp array [n_contexts,2,n_symbols] -> [[ [rewards,probs] ]]
+        self.n_contexts,self.n_symbols,_,self.n_outcomes = self.contexts.shape
+        
         self.n_states = self.n_contexts*self.n_symbols
         self.action_dim = 2
 

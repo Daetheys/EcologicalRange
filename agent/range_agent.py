@@ -16,9 +16,14 @@ class RangeAgent(OnlineAgent):
         self.alpha_q = alpha_q
 
     def reset(self):
-        self.mini = {'[0 1]':0,'[2 3]':0}
-        self.maxi = {'[0 1]':0,'[2 3]':0}
-        self.q_values = np.array([7.5,2.5,0.75,0.25])#np.zeros((self.env.n_states))
+        self.mini = {}
+        self.maxi = {}
+        for symbol in self.env.symbols:
+            self.mini[str(symbol)] = 0
+            self.maxi[str(symbol)] = 0
+        self.q_values = np.zeros(self.env.n_symbols)
+        print(self.mini,self.maxi)
+        print(self.q_values)
         
     #@partial(jax.jit,static_argnums=0)
     def forward(self,obs):
@@ -62,7 +67,35 @@ class RangeAgent(OnlineAgent):
         self.q_values[chosen_symbol] += self.alpha_q * (relative_r - self.q_values[chosen_symbol])#/np.exp(lp)
 
         for i in self.mini:
-            self.log('mini'+str(i),self.mini[i])
-            self.log('maxi'+str(i),self.maxi[i])
+            self.log('mini_'+str(i),self.mini[i])
+            self.log('maxi_'+str(i),self.maxi[i])
         for i in range(len(self.q_values)):
-            self.log('qval'+str(i),self.q_values[i])
+            self.log('qval_'+str(i),self.q_values[i])
+
+    def train(self,nb_steps):
+        o = self.env.reset()
+        for i in range(nb_steps):
+            a,lp = self.forward(o)
+            no,r,d,_ = self.env.step(a)
+            ts = Timestep(o,a,lp,r,no,d,i)
+
+            self.log('observation',o[0])
+            self.log('action',a[0])
+            self.log('reward',r[0])
+            self.log('done',d[0])
+            self.log('new_observation',no[0])
+            self.log('env_mini',self.env.min_range[self.env.current_season])
+            self.log('env_maxi',self.env.max_range[self.env.current_season])
+            self.log('EV',self.env.contexts.prod(axis=2).sum(axis=2).mean(axis=1).item())
+            #self.logger.add('info',i[0])
+
+            self.learn(ts)
+            #print(i,r,d,self.mini,self.maxi)
+            if np.any(d):
+                if len(self.env.min_range) == self.env.current_season+1:
+                    return
+                self.env.next_season()
+                self.q_values *= 0
+                o = no
+            else:
+                o = no

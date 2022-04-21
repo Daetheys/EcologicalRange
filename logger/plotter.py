@@ -44,17 +44,17 @@ def process_loop(actualization_rate,targets,file_path,pipe):
 
     def animate(i):
         data_dict = load_last_file(file_path)
-        try:
-            for i,(ax,bl,bt) in enumerate(zip(axes,lines,targets)):
-                for l,t in zip(bl,bt):
+        for i,(ax,bl,bt) in enumerate(zip(axes,lines,targets)):
+            for l,t in zip(bl,bt):
+                try:
                     data = np.array(data_dict[t])
                     ax.set_xlim(0,len(data)*1.1)
                     minis[i] = min(minis[i],min(data))
                     maxis[i] = max(maxis[i],max(data))
                     ax.set_ylim(minis[i],maxis[i])
                     l.set_data(np.arange(len(data)),data)
-        except KeyError:
-            pass
+                except KeyError:
+                    pass
         return flatten_lines
 
     anim = animation.FuncAnimation(fig,animate,init_func=init,frames=None,interval=actualization_rate*1000,blit=True)
