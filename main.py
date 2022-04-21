@@ -1,6 +1,7 @@
 from agent.range_agent import RangeAgent
 from env.cues_env import CuesEnv
 from env.range_env import RangeEnv
+from agent.q_agent import QAgent
 from logger.logger import Logger
 from logger.plotter import Plotter
 from trainer.trainer import Trainer
@@ -38,7 +39,7 @@ if __name__ == '__main__':
         "season_max_duration":10
         }
 
-    config['agent_class'] = RangeAgent
+    config['agent_class'] = QAgent
     config['agent_config'] = {
             'temp':4.,
             'alpha_ext':0.5,
