@@ -29,7 +29,7 @@ class Trainer:
         self.env = self.config['env_class'](seed=self.seed,**self.config['env_config'])
 
     def init_agent(self):
-        self.agent = self.config['agent_class'](self.env,logger_queue=self.logger.queue,seed=self.seed,**self.config['agent_config'])
+        self.agent = self.config['agent_class'](self.env,0,logger_queue=self.logger.queue,seed=self.seed,**self.config['agent_config'])
 
     def init(self):
         self.create_dir()
@@ -52,6 +52,7 @@ class Trainer:
         self.agent.train(self.config['nb_steps'])
         print('Training Finished : ',self.name)
 
+        #Wait for the logger to get every input and flush it
         time.sleep(1.)
         self.logger.flush()
         self.logger.stop()

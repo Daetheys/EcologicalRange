@@ -3,7 +3,7 @@ from env.cues_env import CuesEnv
 from env.range_env import RangeEnv
 from agent.q_agent import QAgent
 from logger.logger import Logger
-from logger.plotter import Plotter
+from plotter.plotter import Plotter
 from trainer.trainer import Trainer
 
 if __name__ == '__main__':
@@ -33,24 +33,25 @@ if __name__ == '__main__':
 
     config['env_class'] = RangeEnv
     config['env_config'] = {
-        "min_range":[0,0,0,0,0,0,5,5,0,0,10],
-        "max_range":[1,10,10,15,15,10,10,10,15,15,15],
+        "min_range":[0,0,0,0,0,0,5,5,0,0,10]*3,
+        "max_range":[1,10,10,15,15,10,10,10,15,15,15]*3,
         "nb_arms":20,
         "season_max_duration":10
         }
 
-    config['agent_class'] = QAgent
+    config['agent_class'] = RangeAgent
     config['agent_config'] = {
-            'temp':4.,
+            'temp':1.,
             'alpha_ext':0.5,
             'alpha_int':0.05,
-            'alpha_q':1.,
+            'alpha_q':0.5,
         }
 
     config['plotter_class'] = Plotter
     config['plotter_config'] = {
-            'targets':[],
-            'actualization_rate':0.2,
+        'targets':[],
+        'actualization_rate':0.2,
+        'plots':[]
             }
 
     config['logger_class'] = Logger
@@ -58,7 +59,7 @@ if __name__ == '__main__':
             "dtlog":0.2,
         }
 
-    config['nb_steps'] = 350
+    config['nb_steps'] = 1000
     config['name'] = None
     config['seed'] = 0
 
@@ -66,6 +67,16 @@ if __name__ == '__main__':
     trainer = Trainer(config)
 
     trainer.init()
+
+    from plotter.plots.reward_plot import RewardPlot
+    from plotter.plots.range_agent_plot import RangeAgentPlot
+    from plotter.plots.range_env_plot import RangeEnvPlot
+    from plotter.plots.action_plot import ActionPlot
+
+    config['plotter_config']['plots'].append(RewardPlot)
+    config['plotter_config']['plots'].append(RangeAgentPlot)
+    config['plotter_config']['plots'].append(RangeEnvPlot)
+    config['plotter_config']['plots'].append(ActionPlot)
 
     config['plotter_config']['targets'].append(['qval_'+str(i) for i in range(len(trainer.agent.q_values))])
     config['plotter_config']['targets'].append(['mini_'+str(k) for k in trainer.agent.mini]+['maxi_'+str(k) for k in trainer.agent.mini])

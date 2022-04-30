@@ -37,7 +37,8 @@ class RangeEnv(CuesEnv):
         #Sample rewards for each arm uniformly in the given range
         self.season_duration = 0
         self.current_season += 1
-        rewards = jax.random.uniform(next(self.rng),shape=(self.nb_arms,),minval=self.min_range[self.current_season],maxval=self.max_range[self.current_season])
+        rewards = jnp.arange(self.nb_arms)*(self.max_range[self.current_season]-self.min_range[self.current_season])/self.nb_arms + self.min_range[self.current_season]
+        #rewards = jax.random.uniform(next(self.rng),shape=(self.nb_arms,),minval=self.min_range[self.current_season],maxval=self.max_range[self.current_season])
         zeros = jnp.zeros(rewards.shape)
         possible_rewards = jnp.concatenate([rewards[:,None,None],zeros[:,None,None]],axis=2)
 

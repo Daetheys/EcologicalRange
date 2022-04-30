@@ -17,7 +17,39 @@ def load_last_file(file_path):
     with open(file_path_it,'rb') as f:
         return pickle.load(f)
 
-def process_loop(actualization_rate,targets,file_path,pipe):
+def process_loop(actualization_rate,plot_classes,targets,file_path,pipe):
+    #Build figure
+    rows = int(len(targets)**0.5)+1
+    cols = int(len(targets)**0.5)+1
+    fig,axes = plt.subplots(rows,cols)#plt.figure()
+    axes = np.reshape(axes,(-1))
+
+    #Build plots
+    lines = []
+    plots = []
+    for plot_class,ax in zip(plot_classes,axes):
+        plot = plot_class(ax)
+        plot.init_legend()
+        plots.append(plot)
+        lines += plot.lines
+
+    #Animation
+    #def init():
+    #    return lines
+
+    def animate(i):
+        data_dict = load_last_file(file_path)
+        lines = []
+        for plot in plots:
+            plot.show(data_dict)
+            lines += plot.flatten_lines
+        return lines
+
+    anim = animation.FuncAnimation(fig,animate,frames=None,interval=actualization_rate*1000,blit=True)
+    plt.legend()
+    plt.show()
+
+def process_loop2(actualization_rate,plot_classes,targets,file_path,pipe):
     rows = int(len(targets)**0.5)+1
     cols = int(len(targets)**0.5)+1
     fig,axes = plt.subplots(rows,cols)#plt.figure()
@@ -28,7 +60,10 @@ def process_loop(actualization_rate,targets,file_path,pipe):
         lines.append([])
         plt.subplot(rows,cols,i+1)
         for j in ti:
-            line, = ax.plot([],[],label=j)
+            if j in ['action']:
+                line, = ax.plot([],[],label=j,marker='.',lw=0.)
+            else:
+                line, = ax.plot([],[],label=j)
             lines[i].append(line)
             flatten_lines.append(line)
         plt.legend()
@@ -51,7 +86,8 @@ def process_loop(actualization_rate,targets,file_path,pipe):
                     ax.set_xlim(0,len(data)*1.1)
                     minis[i] = min(minis[i],min(data))
                     maxis[i] = max(maxis[i],max(data))
-                    ax.set_ylim(minis[i],maxis[i])
+                    r = maxis[i]-minis[i]
+                    ax.set_ylim(minis[i]-r*0.1,maxis[i]+r*0.1)
                     l.set_data(np.arange(len(data)),data)
                 except KeyError:
                     pass
@@ -61,14 +97,15 @@ def process_loop(actualization_rate,targets,file_path,pipe):
     plt.show()
 
 class Plotter:
-    def __init__(self,file_path,targets,actualization_rate=1):
+    def __init__(self,file_path,plots,targets,actualization_rate=1):
         self.file_path = file_path
         self.actualization_rate = actualization_rate 
         self.targets = targets
+        self.plot_classes = plots
 
     def start(self):
         self.pipe,pipe = mp.Pipe(duplex=True)
-        self.process = mp.Process(target=process_loop,args=(self.actualization_rate,self.targets,self.file_path,pipe))
+        self.process = mp.Process(target=process_loop,args=(self.actualization_rate,self.plot_classes,self.targets,self.file_path,pipe))
         self.process.start()
 
     def stop(self):

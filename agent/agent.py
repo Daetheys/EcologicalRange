@@ -3,10 +3,11 @@ import jax.numpy as jnp
 import numpy as np
 
 class Agent:
-    def __init__(self,env,seed=0,logger_queue=None):
+    def __init__(self,env,idx,seed=0,logger_queue=None):
         self.env = env
         self.seed = seed
         self.rng = hk.PRNGSequence(self.seed)
+        self.idx = idx
         self.logger_queue = logger_queue
     def forward(self,obs):
         raise NotImplementedError
@@ -14,7 +15,7 @@ class Agent:
         raise NotImplementedError
     def log(self,name,val):
         if self.logger_queue:
-            command = ('add',name,val)
+            command = ('add','worker_'+str(self.idx)+'/'+name,val)
             self.logger_queue.put(command)
 
 import collections

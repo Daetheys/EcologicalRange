@@ -22,8 +22,6 @@ class RangeAgent(OnlineAgent):
             self.mini[str(symbol)] = 0
             self.maxi[str(symbol)] = 0
         self.q_values = np.zeros(self.env.n_symbols)
-        print(self.mini,self.maxi)
-        print(self.q_values)
         
     #@partial(jax.jit,static_argnums=0)
     def forward(self,obs):
@@ -66,11 +64,11 @@ class RangeAgent(OnlineAgent):
         relative_r = self.compute_relative(r,str(o))
         self.q_values[chosen_symbol] += self.alpha_q * (relative_r - self.q_values[chosen_symbol])#/np.exp(lp)
 
-        for i in self.mini:
-            self.log('mini_'+str(i),self.mini[i])
-            self.log('maxi_'+str(i),self.maxi[i])
+        for idx,i in enumerate(self.mini.keys()):
+            self.log('AgentMini_'+str(idx),self.mini[i])
+            self.log('AgentMaxi_'+str(idx),self.maxi[i])
         for i in range(len(self.q_values)):
-            self.log('qval_'+str(i),self.q_values[i])
+            self.log('QVal_'+str(i),self.q_values[i])
 
     def train(self,nb_steps):
         o = self.env.reset()
@@ -79,13 +77,13 @@ class RangeAgent(OnlineAgent):
             no,r,d,_ = self.env.step(a)
             ts = Timestep(o,a,lp,r,no,d,i)
 
-            self.log('observation',o[0])
-            self.log('action',a[0])
-            self.log('reward',r[0])
-            self.log('done',d[0])
-            self.log('new_observation',no[0])
-            self.log('env_mini',self.env.min_range[self.env.current_season])
-            self.log('env_maxi',self.env.max_range[self.env.current_season])
+            self.log('Observation',o[0])
+            self.log('Action',a[0])
+            self.log('Reward',r[0])
+            self.log('Done',d[0])
+            self.log('NewObservation',no[0])
+            self.log('EnvMini',self.env.min_range[self.env.current_season])
+            self.log('EnvMaxi',self.env.max_range[self.env.current_season])
             self.log('EV',self.env.contexts.prod(axis=2).sum(axis=2).mean(axis=1).item())
             #self.logger.add('info',i[0])
 
