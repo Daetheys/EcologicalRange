@@ -1,6 +1,7 @@
 from agent.range_agent import RangeAgent
 from env.cues_env import CuesEnv
 from env.range_env import RangeEnv
+from env.procedural_range_env import ProceduralRangeEnv
 from agent.q_agent import QAgent
 from logger.logger import Logger
 from plotter.plotter import Plotter
@@ -31,10 +32,19 @@ if __name__ == '__main__':
             }
     """
 
+    """
     config['env_class'] = RangeEnv
     config['env_config'] = {
         "min_range":[0,0,0,0,0,0,5,5,0,0,10]*3,
         "max_range":[1,10,10,15,15,10,10,10,15,15,15]*3,
+        "nb_arms":20,
+        "season_max_duration":10
+        }
+    """
+
+    config['env_class'] = ProceduralRangeEnv
+    config['env_config'] = {
+        "nb_seasons":30,
         "nb_arms":20,
         "season_max_duration":10
         }
@@ -75,7 +85,7 @@ if __name__ == '__main__':
 
     config['plotter_config']['plots'].append(RewardPlot)
     config['plotter_config']['plots'].append(RangeAgentPlot)
-    config['plotter_config']['plots'].append(RangeEnvPlot)
+    #config['plotter_config']['plots'].append(RangeEnvPlot)
     config['plotter_config']['plots'].append(ActionPlot)
 
     config['plotter_config']['targets'].append(['qval_'+str(i) for i in range(len(trainer.agent.q_values))])

@@ -93,7 +93,7 @@ def process_loop2(actualization_rate,plot_classes,targets,file_path,pipe):
                     pass
         return flatten_lines
 
-    anim = animation.FuncAnimation(fig,animate,init_func=init,frames=None,interval=actualization_rate*1000,blit=True)
+    anim = animation.FuncAnimation(fig,animate,init_func=init,frames=None,interval=actualization_rate*1000,blit=False)
     plt.show()
 
 class Plotter:

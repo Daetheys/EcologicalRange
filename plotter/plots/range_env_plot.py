@@ -1,6 +1,6 @@
-from plotter.plots.plot import Plot
+from plotter.plots.season_plot import SeasonPlot
 
-class RangeEnvPlot(Plot):
+class RangeEnvPlot(SeasonPlot):
     def __init__(self,*args,**kwargs):
         super().__init__(*args,**kwargs)
 

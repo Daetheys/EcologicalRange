@@ -1,7 +1,7 @@
-from plotter.plots.plot import Plot
+from plotter.plots.season_plot import SeasonPlot
 import re
 
-class RangeAgentPlot(Plot):
+class RangeAgentPlot(SeasonPlot):
     def __init__(self,*args,**kwargs):
         super().__init__(*args,**kwargs)
 
@@ -19,4 +19,4 @@ class RangeAgentPlot(Plot):
 
     @property
     def targets(self):
-        return ['AgentMini','AgentMaxi']
+        return ['AgentMini','AgentMaxi']+['EnvMini','EnvMaxi']

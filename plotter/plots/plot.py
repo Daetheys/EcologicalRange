@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import re
+import numpy as np
 
 class Plot:
     def __init__(self,ax):
@@ -9,8 +10,10 @@ class Plot:
         self.xlabel = ""
         self.ylabel = ""
 
-        self.maxi_y = None
-        self.mini_y = None
+        self.maxi_y = 0
+        self.mini_y = 0
+
+        self.width = 1
 
         self.lines = {}
 
@@ -39,17 +42,45 @@ class Plot:
         line, = self.ax.plot(*args,**kwargs)
         return line
 
+    def update_height(self,data):
+        self.mini_y = min(self.mini_y,min(data))
+        self.maxi_y = max(self.maxi_y,max(data))
+
+    def get_height(self):
+        r = self.maxi_y-self.mini_y
+        mini = self.mini_y-r*0.1
+        maxi = self.maxi_y+r*0.1
+        if r == 0:
+            mini = 0
+            maxi = 1
+        return mini,maxi
+
+    def update_width(self,data):
+        self.width = max(self.width,len(data))
+
+    def get_width(self):
+        return max(self.width,1)*1.1
+
     def show(self,d):
         for t in self.filter_labels(d):
             data = d[t]
             lbl = re.findall('^[a-zA-Z]+_[0-9]+/([a-zA-Z]+(?:_[0-9]+|))$',t)[0]
             try:
-                self.lines[lbl].set_data(range(len(data)),data)
-                self.ax.set_xlim(0,len(data)*1.1)
-                self.mini_y = min(self.mini_y,min(data))
-                self.maxi_y = max(self.maxi_y,max(data))
-                r = self.maxi_y-self.mini_y
-                self.ax.set_ylim(self.mini_y-r*0.1,self.maxi_y+r*0.1)
+                if hasattr(self.lines[lbl],"set_data"):
+                    self.lines[lbl].set_data(range(len(data)),data)
+                elif hasattr(self.lines[lbl],"set_offsets"):
+                    self.lines[lbl].set_offsets(np.c_[range(len(data)),data])
+                else:
+                    print(lbl,self.lines[lbl])
+                    assert False #Unkown update function
+
+                self.update_width(data)
+                self.ax.set_xlim(0,self.get_width())
+
+                self.update_height(data)
+                mini,maxi = self.get_height()
+                self.ax.set_ylim(mini,maxi)
+
             except KeyError:
                 self.lines[lbl] = self.plot_fn(range(len(data)),data,label=lbl)
                 if self.maxi_y is None:

@@ -1,6 +1,6 @@
-from plotter.plots.plot import Plot
+from plotter.plots.season_plot import SeasonPlot
 
-class RewardPlot(Plot):
+class RewardPlot(SeasonPlot):
     def __init__(self,*args,**kwargs):
         super().__init__(*args,**kwargs)
 
