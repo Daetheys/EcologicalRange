@@ -19,8 +19,8 @@ class RangeAgent(OnlineAgent):
         self.mini = {}
         self.maxi = {}
         for symbol in self.env.symbols:
-            self.mini[str(symbol)] = 0
-            self.maxi[str(symbol)] = 0
+            self.mini[str(symbol)] = np.array(0,dtype=np.float32)
+            self.maxi[str(symbol)] = np.array(0,dtype=np.float32)
         self.q_values = np.zeros(self.env.n_symbols)
         
     #@partial(jax.jit,static_argnums=0)
@@ -42,12 +42,6 @@ class RangeAgent(OnlineAgent):
         chosen_symbol = o[0,a[0]]
         o = o[0]
 
-        #if chosen_symbol == 1:
-        #    print('---')
-        #    print(chosen_symbol,self.mini[chosen_symbol],r,self.maxi[chosen_symbol])
-
-        #lp = 1
-
         #Update Mini
         alpha = self.alpha_int
         if r < self.mini[str(o)]:
@@ -64,18 +58,12 @@ class RangeAgent(OnlineAgent):
         relative_r = self.compute_relative(r,str(o))
         self.q_values[chosen_symbol] += self.alpha_q * (relative_r - self.q_values[chosen_symbol])#/np.exp(lp)
 
-        for idx,i in enumerate(self.mini.keys()):
-            self.log('AgentMini_'+str(idx),self.mini[i])
-            self.log('AgentMaxi_'+str(idx),self.maxi[i])
-        for i in range(len(self.q_values)):
-            self.log('QVal_'+str(i),self.q_values[i])
-
     def train(self,nb_steps):
         o = self.env.reset()
         for i in range(nb_steps):
             a,lp = self.forward(o)
             no,r,d,_ = self.env.step(a)
-            ts = Timestep(o,a,lp,r,no,d,i)
+            ts = Timestep(o,a,lp,r[0],no,d,i)
 
             self.log('Observation',o[0])
             self.log('Action',a[0])
@@ -85,10 +73,15 @@ class RangeAgent(OnlineAgent):
             self.log('EnvMini',self.env.min_range[self.env.current_season])
             self.log('EnvMaxi',self.env.max_range[self.env.current_season])
             self.log('EV',self.env.contexts.prod(axis=2).sum(axis=2).mean(axis=1).item())
-            #self.logger.add('info',i[0])
+
+            for idx,i in enumerate(self.mini.keys()):
+                self.log('AgentMini_'+str(idx),self.mini[i])
+                self.log('AgentMaxi_'+str(idx),self.maxi[i])
+            for i in range(len(self.q_values)):
+                self.log('QVal_'+str(i),self.q_values[i])
 
             self.learn(ts)
-            #print(i,r,d,self.mini,self.maxi)
+            
             if np.any(d):
                 if len(self.env.min_range) == self.env.current_season+1:
                     return

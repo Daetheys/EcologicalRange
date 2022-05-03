@@ -5,11 +5,53 @@ from env.procedural_range_env import ProceduralRangeEnv
 from agent.q_agent import QAgent
 from logger.logger import Logger
 from plotter.plotter import Plotter
-from trainer.trainer import Trainer
+from trainer.trainer_set import TrainerSet
+
+from plotter.plots.reward_plot import RewardPlot
+from plotter.plots.range_agent_plot import RangeAgentPlot
+from plotter.plots.range_env_plot import RangeEnvPlot
+from plotter.plots.action_plot import ActionPlot
+
+import uuid
+import os
+
+
+def main(config):
+    name = config['name']
+    if name is None:
+        name = str(uuid.uuid4())
+
+    file_path = os.path.join('TRAININGS',name)
+
+    logger = None
+    logger_queue = None
+    if config['logger_class']:
+        #Create directory
+        logger_file_path = os.path.join(file_path,'logs')
+        os.makedirs(logger_file_path)
+        #Start logger
+        logger = config['logger_class'](logger_file_path,**config['logger_config'])
+        logger.init()
+        logger_queue = logger.queue
+        logger.start()
+
+    if config['plotter_class']:
+        #Start plotter
+        logger_file_path = os.path.join(file_path,'logs')
+        plotter = config['plotter_class'](logger_file_path,**config['plotter_config'])
+        plotter.start()
+
+    trainer = TrainerSet(config,logger_queue=logger_queue,nb_trainers=config['nb_trainers'])
+    trainer.init()
+
+    print('Starting Training : ',name)
+    trainer.train()
+    print('Training Finished : ',name)  
+
+    if logger:
+        logger.stop()
 
 if __name__ == '__main__':
-
-    
 
     config = {}
 
@@ -46,7 +88,8 @@ if __name__ == '__main__':
     config['env_config'] = {
         "nb_seasons":30,
         "nb_arms":20,
-        "season_max_duration":10
+        "season_max_duration":10,
+        "seed":0,
         }
 
     config['agent_class'] = RangeAgent
@@ -59,9 +102,8 @@ if __name__ == '__main__':
 
     config['plotter_class'] = Plotter
     config['plotter_config'] = {
-        'targets':[],
         'actualization_rate':0.2,
-        'plots':[]
+        'plots':[RewardPlot,RangeAgentPlot]
             }
 
     config['logger_class'] = Logger
@@ -71,35 +113,8 @@ if __name__ == '__main__':
 
     config['nb_steps'] = 1000
     config['name'] = None
-    config['seed'] = 0
+    config['nb_trainers'] = 2
+    config['agent_seeds'] = [i for i in list(range(config['nb_trainers']))]
 
 
-    trainer = Trainer(config)
-
-    trainer.init()
-
-    from plotter.plots.reward_plot import RewardPlot
-    from plotter.plots.range_agent_plot import RangeAgentPlot
-    from plotter.plots.range_env_plot import RangeEnvPlot
-    from plotter.plots.action_plot import ActionPlot
-
-    config['plotter_config']['plots'].append(RewardPlot)
-    config['plotter_config']['plots'].append(RangeAgentPlot)
-    #config['plotter_config']['plots'].append(RangeEnvPlot)
-    config['plotter_config']['plots'].append(ActionPlot)
-
-    config['plotter_config']['targets'].append(['qval_'+str(i) for i in range(len(trainer.agent.q_values))])
-    config['plotter_config']['targets'].append(['mini_'+str(k) for k in trainer.agent.mini]+['maxi_'+str(k) for k in trainer.agent.mini])
-    config['plotter_config']['targets'].append(['env_mini','env_maxi'])
-    config['plotter_config']['targets'].append(['reward','EV'])
-    config['plotter_config']['targets'].append(['action'])
-
-    trainer.start_logger()
-    trainer.start_plotter()
-
-    trainer.start()
-
-    #print("EV",(contexts[:,:,0]*contexts[:,:,1]).sum(axis=2).reshape(-1))
-    #print("min",trainer.agent.mini)
-    #print("max",trainer.agent.maxi)
-    #print("qval",trainer.agent.q_values)
+    main(config)

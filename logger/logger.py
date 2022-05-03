@@ -51,7 +51,7 @@ class Logger:
     
     def start(self):
         self.process.start()
-        print('started')
+        print('logger started')
 
     def stop(self):
         command = ('stop',)

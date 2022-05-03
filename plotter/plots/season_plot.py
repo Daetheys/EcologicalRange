@@ -16,7 +16,8 @@ class SeasonPlot(Plot):
     def show(self,d):
         mini,maxi = self.get_height()
         width = self.get_width()
-        if width < self.span_x_max + self.season_length*2:
-            self.ax.axvspan(self.span_x_max,self.span_x_max+self.season_length,alpha=self.alphaspan,facecolor=self.colorspan)
+        if width > self.span_x_max + self.season_length*2:
+            span = self.ax.axvspan(self.span_x_max,self.span_x_max+self.season_length,alpha=self.alphaspan,facecolor=self.colorspan)
+            self.lines['span'+str(self.span_x_max)] = span
             self.span_x_max += self.season_length*2
         super().show(d)
