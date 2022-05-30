@@ -14,8 +14,7 @@ class Scatter(Line):
         self.cmap = cmap
 
     def set_data(self,x,y,update_ranges=True):
-        y = y[...,-1]*8
-        y = 1/np.exp(y[:,:,None] - y[:,None,:]).sum(axis=1)
+        y = y[...,-1]
         self.lines['main'] = self.ax.imshow(y.transpose(),vmin=0,vmax=1,cmap=self.cmap,aspect=y.shape[0]/y.shape[1]/2.2)
         if update_ranges:
             self.update_ranges(x,[0,y.shape[1]])

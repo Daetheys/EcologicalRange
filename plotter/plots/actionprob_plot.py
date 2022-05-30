@@ -9,5 +9,6 @@ class ActionProbPlot(SeasonPlot):
         self.xlabel = 'Iterations'
         self.ylabel = 'Action index'
 
-        self.targets = {'PVal':scatter(self.ax,cmap='Greys'),
-                        'QVal':scatter(self.ax,cmap='Greys')}
+        self.targets ={'ActionProbs':scatter(self.ax,cmap='Greys')}
+        #{'PVal':scatter(self.ax,cmap='Greys'),
+        #                'QVal':scatter(self.ax,cmap='Greys')}

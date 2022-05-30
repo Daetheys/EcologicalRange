@@ -24,9 +24,13 @@ class QAgent(OnlineAgent):
         temp = self.temp
         if self.scaled_beta:
             temp *= self.env.get_current_range()
-        self.log('temp',temp)
         q_val_temp = q_val/temp
         action_probs = jax.nn.softmax(q_val_temp,axis=1)
+        self.log('ActionProbs',action_probs[0])
+        print('--')
+        print(q_val.min(),q_val.max(),q_val.mean(),q_val.var())
+        print(q_val_temp.min(),q_val_temp.max(),q_val_temp.mean(),q_val_temp.var())
+        print(temp,self.env.get_current_range(),action_probs.max())
         actions = sample_batch_index(next(self.rng),action_probs)
         logprobs = jnp.log(action_probs[np.arange(action_probs.shape[0]),np.array(actions)])
         return actions,logprobs

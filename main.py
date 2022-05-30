@@ -118,13 +118,13 @@ if __name__ == '__main__':
     
     config['agent_class'] = QAgent#RangeAgent#ACAgent#QAgent
     config['agent_config'] = {
-        'temp':1./8,
+        'temp':1/8,
         'beta':0.5,
         'alpha_ext':0.5,
         'alpha_int':0.05,
         'alpha_v':0.5,
         'alpha_q':0.5,
-        'informed':False,
+        'informed':True,
         'scaled_beta':True,
     }
 
