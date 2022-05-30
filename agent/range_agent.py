@@ -41,7 +41,8 @@ class RangeAgent(OnlineAgent):
         (o,a,lp,r,no,d,i) = ts
         chosen_symbol = o[0,a[0]]
         o = o[0]
-
+        lp = lp[0]
+        
         #Update Mini
         alpha = self.alpha_int
         if r < self.mini[str(o)]:
@@ -73,12 +74,13 @@ class RangeAgent(OnlineAgent):
             self.log('EnvMini',self.env.min_range[self.env.current_season])
             self.log('EnvMaxi',self.env.max_range[self.env.current_season])
             self.log('EV',self.env.contexts.prod(axis=2).sum(axis=2).mean(axis=1).item())
+            self.log('temp',self.temp)
 
             for idx,i in enumerate(self.mini.keys()):
                 self.log('AgentMini_'+str(idx),self.mini[i])
                 self.log('AgentMaxi_'+str(idx),self.maxi[i])
-            for i in range(len(self.q_values)):
-                self.log('QVal_'+str(i),self.q_values[i])
+    
+            self.log('QVal',self.q_values)
 
             self.learn(ts)
             
@@ -87,6 +89,7 @@ class RangeAgent(OnlineAgent):
                     return
                 self.env.next_season()
                 self.q_values *= 0
+                self.q_values += 0.5
                 o = no
             else:
                 o = no

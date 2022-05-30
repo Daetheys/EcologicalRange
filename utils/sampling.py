@@ -16,4 +16,4 @@ def sample_batch_index(key,probs):
     batch_size,nb_outcomes = probs.shape
     positions = sample_batch_position(key,probs)
     indexs =  jnp.tile(jnp.arange(nb_outcomes)[None],(batch_size,1))
-    return jnp.array(jnp.sum(positions*indexs,axis=1),dtype=jnp.int8)
+    return jnp.array(jnp.sum(positions*indexs,axis=1),dtype=jnp.int32)

@@ -1,4 +1,5 @@
 from plotter.plots.season_plot import SeasonPlot
+from plotter.lines.std_line import stdline
 import re
 
 class RangeAgentPlot(SeasonPlot):
@@ -9,6 +10,11 @@ class RangeAgentPlot(SeasonPlot):
         self.xlabel = 'Iterations'
         self.ylabel = 'Min/Max Reward'
 
+        self.targets = {'AgentMini':stdline(self.ax,color='blue'),
+                        'AgentMaxi':stdline(self.ax,color='red'),
+                        'EnvMini':stdline(self.ax,color='orange'),
+                        'EnvMaxi':stdline(self.ax,color='green')}
+
     def filter_labels(self,d):
         lbls = []
         for k in d:
@@ -16,7 +22,3 @@ class RangeAgentPlot(SeasonPlot):
                 if re.match('^[a-zA-Z]+_[0-9]+/'+str(t)+'(?:_[0-9]+|)$',k):
                     lbls.append(k)
         return lbls
-
-    @property
-    def targets(self):
-        return ['AgentMini','AgentMaxi']+['EnvMini','EnvMaxi']

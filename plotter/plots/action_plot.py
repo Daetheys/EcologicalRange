@@ -14,4 +14,4 @@ class ActionPlot(SeasonPlot):
 
     @property
     def targets(self):
-        return ['Action']
+        return ['Action','temp']

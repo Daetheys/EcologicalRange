@@ -3,7 +3,7 @@ import jax.numpy as jnp
 import numpy as np
 
 class Agent:
-    def __init__(self,env,idx,seed=0,logger_queue=None):
+    def __init__(self,env,idx,*args,seed=0,logger_queue=None,**kwargs):
         self.env = env
         self.seed = seed
         self.rng = hk.PRNGSequence(self.seed)

@@ -5,28 +5,23 @@ import jax.numpy as jnp
 from functools import partial
 from utils.sampling import sample_batch_index
 
-class QAgent(OnlineAgent):
-    def __init__(self,*args,temp=1.,alpha_q=0.1,informed=False,scaled_beta=False,**kwargs):
+class ACAgent(OnlineAgent):
+    def __init__(self,*args,beta=0.5,alpha_v=0.1,informed=False,**kwargs):
         super().__init__(*args,**kwargs)
         self.reset()
 
-        self.temp = temp
-        self.alpha_q = alpha_q
+        self.alpha_v = alpha_v
+        self.beta = beta
         self.informed = informed
-        self.scaled_beta = scaled_beta
 
     def reset(self):
-        self.q_values = np.zeros(self.env.n_symbols)
+        self.value = 0
+        self.p_values = np.zeros(self.env.n_symbols)
         
     #@partial(jax.jit,static_argnums=0)
     def forward(self,obs):
-        q_val = self.q_values[np.array(obs)]
-        temp = self.temp
-        if self.scaled_beta:
-            temp *= self.env.get_current_range()
-        self.log('temp',temp)
-        q_val_temp = q_val/temp
-        action_probs = jax.nn.softmax(q_val_temp,axis=1)
+        p_val = self.p_values[np.array(obs)]
+        action_probs = jax.nn.softmax(p_val,axis=1)
         actions = sample_batch_index(next(self.rng),action_probs)
         logprobs = jnp.log(action_probs[np.arange(action_probs.shape[0]),np.array(actions)])
         return actions,logprobs
@@ -37,7 +32,9 @@ class QAgent(OnlineAgent):
         o = o[0]
 
         #Update Q
-        self.q_values[chosen_symbol] += self.alpha_q * (r - self.q_values[chosen_symbol])#/np.exp(lp)
+        new_value = self.value + self.alpha_v * (r - self.value)
+        self.p_values[chosen_symbol] += self.beta * (r + new_value - self.value) * (1 - np.exp(lp))
+        self.value = new_value
 
     def train(self,nb_steps):
         o = self.env.reset()
@@ -53,17 +50,20 @@ class QAgent(OnlineAgent):
             self.log('NewObservation',no[0])
             self.log('EnvMini',self.env.min_range[self.env.current_season])
             self.log('EnvMaxi',self.env.max_range[self.env.current_season])
-            self.log('EV',self.env.get_ev())
-            self.log('QVal',self.q_values)
+            self.log('EV',self.env.contexts.prod(axis=2).sum(axis=2).mean(axis=1).item())
+            self.log('PVal',self.p_values)
+            #for i in range(len(self.p_values)):
+            #    self.log('PVal_'+str(i),self.p_values[i])
 
             self.learn(ts)
             if np.any(d):
                 if len(self.env.min_range) == self.env.current_season+1:
                     return
                 self.env.next_season()
-                self.q_values *= 0
+                self.p_values *= 0
+                self.value = 0
                 if self.informed:
-                    self.q_values += self.env.get_ev()
+                    self.value = self.env.get_ev()
                 o = no
             else:
                 o = no

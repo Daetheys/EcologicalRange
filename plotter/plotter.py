@@ -19,6 +19,8 @@ def load_last_file(file_path):
 
 def process_loop(actualization_rate,plot_classes,file_path,pipe):
     #Build figure
+    #plt.ion()
+    
     rows = int(len(plot_classes)**0.5)+1
     cols = int(len(plot_classes)**0.5)+1
     fig,axes = plt.subplots(rows,cols)#plt.figure()
@@ -41,7 +43,7 @@ def process_loop(actualization_rate,plot_classes,file_path,pipe):
             lines += plot.flatten_lines
         return lines
 
-    anim = animation.FuncAnimation(fig,animate,frames=None,interval=actualization_rate*1000,blit=True)
+    anim = animation.FuncAnimation(fig,animate,frames=None,interval=actualization_rate*1000,blit=False)
     plt.legend()
     plt.show()
 

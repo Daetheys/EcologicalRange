@@ -27,13 +27,17 @@ class CuesEnv(Env):
         self.action_dim = 2
 
         self.__base_obs_array = jnp.tile(jnp.arange(self.n_symbols)[None],(self.batch_size,1))
-
         
     def reset(self):
         self.current_contexts = jax.random.choice(next(self.rng),jnp.arange(self.n_contexts),shape=(self.batch_size,))
         return self._sample_obs()
 
-    #@partial(jax.jit,static_argnums=0)
+    def get_current_range(self):
+        return self.contexts[self.current_contexts,:,:,0].max()-self.contexts[self.current_contexts,:,:,0].min()
+
+    def get_ev(self):
+        return self.contexts[self.current_contexts].prod(axis=2).sum(axis=2).mean(axis=1).item()
+
     def _sample_obs(self):
         out = self.__base_obs_array + self.current_contexts[:,None]*self.n_symbols
         return out

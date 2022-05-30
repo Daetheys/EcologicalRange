@@ -3,6 +3,7 @@ from env.cues_env import CuesEnv
 from env.range_env import RangeEnv
 from env.procedural_range_env import ProceduralRangeEnv
 from agent.q_agent import QAgent
+from agent.ac_agent import ACAgent
 from logger.logger import Logger
 from plotter.plotter import Plotter
 from trainer.trainer_set import TrainerSet
@@ -11,6 +12,7 @@ from plotter.plots.reward_plot import RewardPlot
 from plotter.plots.range_agent_plot import RangeAgentPlot
 from plotter.plots.range_env_plot import RangeEnvPlot
 from plotter.plots.action_plot import ActionPlot
+from plotter.plots.actionprob_plot import ActionProbPlot
 
 import uuid
 import os
@@ -77,44 +79,70 @@ if __name__ == '__main__':
     """
     config['env_class'] = RangeEnv
     config['env_config'] = {
-        "min_range":[0,0,0,0,0,0,5,5,0,0,10]*3,
-        "max_range":[1,10,10,15,15,10,10,10,15,15,15]*3,
+        "min_range":[0,0,0,90,90,90,40,40,40],
+        "max_range":[1,1,1,100,100,100,50,50,50],
+        "nb_arms":200,
+        "season_max_duration":50
+        }
+    """
+
+    """
+    config['env_class'] = RangeEnv
+    config['env_config'] = {
+        "min_range":[-10*40 for i in range(-10,100)],
+        "max_range":[i*40 for i in range(-10,100)],
         "nb_arms":20,
         "season_max_duration":10
         }
     """
+    
+    """
+    config['env_class'] = RangeEnv
+    config['env_config'] = {
+        "min_range":[0],
+        "max_range":[1],
+        "nb_arms":20,
+        "season_max_duration":200
+        }
+    """
 
+    
     config['env_class'] = ProceduralRangeEnv
     config['env_config'] = {
         "nb_seasons":30,
         "nb_arms":20,
         "season_max_duration":10,
         "seed":0,
-        }
-
-    config['agent_class'] = RangeAgent
+    }
+    
+    
+    config['agent_class'] = QAgent#RangeAgent#ACAgent#QAgent
     config['agent_config'] = {
-            'temp':1.,
-            'alpha_ext':0.5,
-            'alpha_int':0.05,
-            'alpha_q':0.5,
-        }
+        'temp':1./8,
+        'beta':0.5,
+        'alpha_ext':0.5,
+        'alpha_int':0.05,
+        'alpha_v':0.5,
+        'alpha_q':0.5,
+        'informed':False,
+        'scaled_beta':True,
+    }
 
     config['plotter_class'] = Plotter
     config['plotter_config'] = {
         'actualization_rate':0.2,
-        'plots':[RewardPlot,RangeAgentPlot]
-            }
+        'plots':[RewardPlot,RangeAgentPlot,ActionProbPlot]
+    }
 
     config['logger_class'] = Logger
     config['logger_config'] = {
             "dtlog":0.2,
-        }
+    }
 
-    config['nb_steps'] = 1000
+    config['nb_steps'] = 10000
     config['name'] = None
-    config['nb_trainers'] = 2
-    config['agent_seeds'] = [i for i in list(range(config['nb_trainers']))]
+    config['nb_trainers'] = 1
+    config['agent_seeds'] = [i+101 for i in list(range(config['nb_trainers']))]
 
 
     main(config)
