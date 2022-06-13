@@ -13,8 +13,8 @@ class ProceduralRangeEnv(RangeEnv):
                 mode = np.random.choice(modes)
                 mini_mode,maxi_mode = mode%3-1,mode//3-1
                 print(mode,mini_mode,maxi_mode)
-                a2 = min(a,b)+mini_mode*np.random.uniform(70,120)
-                b2 = max(b,a)+maxi_mode*np.random.uniform(70,120)
+                a2 = min(a,b)+mini_mode*np.random.uniform(70,1200)
+                b2 = max(b,a)+maxi_mode*np.random.uniform(70,1200)
                 (a,b) = (a2,b2)
 
                 if mini_mode + maxi_mode == 2:
@@ -45,4 +45,9 @@ class ProceduralRangeEnv(RangeEnv):
                 modes.remove(mode)
             min_range.append(a)
             max_range.append(b)
+        min_range = np.array(min_range)
+        max_range = np.array(max_range)
+        #min_range = (min_range-min_range.mean())**2+min_range.mean()
+        #max_range = (max_range-max_range.mean())**2+max_range.mean()
+        #max_range,min_range = np.minimum(min_range,max_range),np.maximum(min_range,max_range)
         super().__init__(min_range,max_range,*args,**kwargs)

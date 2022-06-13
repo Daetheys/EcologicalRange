@@ -114,7 +114,11 @@ if __name__ == '__main__':
         "season_max_duration":10,
         "seed":0,
     }
-    
+# 1 - Vanilla QL
+# 2 - QL + memory Q
+# 3 - Range
+# 4 - QL + memory ?
+
     
     config['agent_class'] = QAgent#RangeAgent#ACAgent#QAgent
     config['agent_config'] = {
@@ -124,8 +128,8 @@ if __name__ == '__main__':
         'alpha_int':0.05,
         'alpha_v':0.5,
         'alpha_q':0.5,
-        'informed':True,
-        'scaled_beta':True,
+        'informed':'memory', #cheat : knows the exact value / 'memory' : keeps the value from previous season / False : not informed
+        'scaled_beta':'memory', #cheat : knows the exact range / 'memory' : remember the range from the previous season / False : not informed
     }
 
     config['plotter_class'] = Plotter

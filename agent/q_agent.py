@@ -15,6 +15,9 @@ class QAgent(OnlineAgent):
         self.informed = informed
         self.scaled_beta = scaled_beta
 
+        self.memory_reward = []
+        self.memory_action = []
+
     def reset(self):
         self.q_values = np.zeros(self.env.n_symbols)
         
@@ -22,15 +25,14 @@ class QAgent(OnlineAgent):
     def forward(self,obs):
         q_val = self.q_values[np.array(obs)]
         temp = self.temp
-        if self.scaled_beta:
+        if self.scaled_beta == 'cheat':
             temp *= self.env.get_current_range()
+        elif self.scaled_beta == 'memory':
+            if max(self.q_values) != min(self.q_values):
+                temp *= max(self.q_values)-min(self.q_values)
         q_val_temp = q_val/temp
         action_probs = jax.nn.softmax(q_val_temp,axis=1)
         self.log('ActionProbs',action_probs[0])
-        print('--')
-        print(q_val.min(),q_val.max(),q_val.mean(),q_val.var())
-        print(q_val_temp.min(),q_val_temp.max(),q_val_temp.mean(),q_val_temp.var())
-        print(temp,self.env.get_current_range(),action_probs.max())
         actions = sample_batch_index(next(self.rng),action_probs)
         logprobs = jnp.log(action_probs[np.arange(action_probs.shape[0]),np.array(actions)])
         return actions,logprobs
@@ -43,12 +45,20 @@ class QAgent(OnlineAgent):
         #Update Q
         self.q_values[chosen_symbol] += self.alpha_q * (r - self.q_values[chosen_symbol])#/np.exp(lp)
 
+    def init_new_season(self):
+        self.memory_reward.append([])
+        self.memory_action.append([])
+
     def train(self,nb_steps):
         o = self.env.reset()
+        self.init_new_season()
         for i in range(nb_steps):
             a,lp = self.forward(o)
             no,r,d,_ = self.env.step(a)
             ts = Timestep(o,a,lp,r,no,d,i)
+
+            self.memory_reward[-1].append(r)
+            self.memory_action[-1].append(a)
 
             self.log('Observation',o[0])
             self.log('Action',a[0])
@@ -65,9 +75,15 @@ class QAgent(OnlineAgent):
                 if len(self.env.min_range) == self.env.current_season+1:
                     return
                 self.env.next_season()
-                self.q_values *= 0
-                if self.informed:
+                if self.informed == 'cheat':
+                    self.q_values *= 0
                     self.q_values += self.env.get_ev()
+                elif self.informed == 'memory':
+                    unique_actions = np.unique(self.memory_action[-1])
+                    print(unique_actions)
+                    self.q_values[:] = self.q_values[unique_actions].mean()
+                
+                self.init_new_season()
                 o = no
             else:
                 o = no
